@@ -15,7 +15,7 @@ import json
 import glob
 
 from tools.setup_helpers.env import check_env_flag
-from tools.setup_helpers.cuda import WITH_CUDA, CUDA_HOME, CUDA_VERSION
+from tools.setup_helpers.cuda import WITH_CUDA, CUDA_HOME, CUDA_EXTRA_LIBS, CUDA_VERSION
 from tools.setup_helpers.cudnn import (WITH_CUDNN, CUDNN_LIBRARY,
                                        CUDNN_LIB_DIR, CUDNN_INCLUDE_DIR)
 from tools.setup_helpers.nccl import WITH_NCCL, WITH_SYSTEM_NCCL, NCCL_LIB_DIR, \
@@ -291,6 +291,10 @@ class build_ext(build_ext_parent):
             print('-- Not using cuDNN')
         if WITH_CUDA:
             print('-- Detected CUDA at ' + CUDA_HOME)
+            if CUDA_EXTRA_LIBS is not None:
+                print('--   with extra libs at ' + CUDA_EXTRA_LIBS)
+            else:
+                print('--   with no extra libs')
         else:
             print('-- Not using CUDA')
         if WITH_NCCL and WITH_SYSTEM_NCCL:
@@ -563,6 +567,13 @@ if WITH_CUDA:
             if os.path.exists(cuda_lib_path):
                 break
         extra_link_args.append('-Wl,-rpath,' + cuda_lib_path)
+
+        if CUDA_EXTRA_LIBS is not None:
+            for lib_dir in cuda_lib_dirs:
+                cuda_lib_path = os.path.join(CUDA_EXTRA_LIBS, lib_dir)
+                if os.path.exists(cuda_lib_path):
+                    break
+            extra_link_args.append('-Wl,-rpath,' + cuda_lib_path)
 
         nvtoolext_lib_name = 'nvToolsExt'
 

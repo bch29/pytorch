@@ -67,6 +67,7 @@ def find_cuda_version(cuda_home):
 if check_env_flag('NO_CUDA'):
     WITH_CUDA = False
     CUDA_HOME = None
+    CUDA_EXTRA_LIBS = None
     CUDA_VERSION = None
 else:
     if IS_LINUX or IS_DARWIN:
@@ -77,8 +78,13 @@ else:
             CUDA_HOME = WINDOWS_HOME[0].replace('\\', '/')
     if not os.path.exists(CUDA_HOME):
         # We use nvcc path on Linux and cudart path on macOS
-        if IS_LINUX or IS_WINDOWS:
+        if IS_WINDOWS:
             cuda_path = find_nvcc()
+        elif IS_LINUX:
+            cuda_path = find_nvcc()
+            cudart_path = ctypes.util.find_library('cudart')
+            if cudart_path is not None:
+                cuda_libs_path = os.path.dirname(cudart_path)
         else:
             cudart_path = ctypes.util.find_library('cudart')
             if cudart_path is not None:
@@ -89,5 +95,11 @@ else:
             CUDA_HOME = os.path.dirname(cuda_path)
         else:
             CUDA_HOME = None
-    CUDA_VERSION = find_cuda_version(CUDA_HOME)
+
+        if cuda_libs_path is not None:
+            CUDA_EXTRA_LIBS = os.path.dirname(cuda_libs_path)
+        else:
+            CUDA_EXTRA_LIBS = None
+
+        CUDA_VERSION = find_cuda_version(CUDA_HOME)
     WITH_CUDA = CUDA_HOME is not None
