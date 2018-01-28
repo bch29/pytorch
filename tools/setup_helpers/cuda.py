@@ -70,6 +70,7 @@ if check_env_flag('NO_CUDA'):
     CUDA_EXTRA_LIBS = None
     CUDA_VERSION = None
 else:
+    CUDA_EXTRA_LIBS = None
     if IS_LINUX or IS_DARWIN:
         CUDA_HOME = os.getenv('CUDA_HOME', LINUX_HOME)
     else:
